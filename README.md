@@ -1,7 +1,7 @@
 # BlinkyTileFastLED
 BlinkyTile control using the FastLED library and an Arduino or Teensy
 
-[![Demo Video](https://lh5.googleusercontent.com/-0L_goJcQBjM/VJiTDfKL3cI/AAAAAAABuPI/r_-b-gLhrX0/s259-p/VID_20141222_154625.mp4)](https://plus.google.com/u/0/+JasonCoon1/posts/YitoVR1iwZv?pid=6095783783759076802&oid=103867089694409269471)
+[![Demo Video](https://lh3.googleusercontent.com/2UwXuOTRt1NI5Jn9BE4O2c1Sjd69TCkSLODxP0fWQq1w=s219-p-no)](https://www.youtube.com/watch?v=ZVGWRow0m3g)
 
 Hardware
 --------

@@ -5,15 +5,15 @@ BlinkyTile control using the FastLED library and an Arduino or Teensy
 
 This tutorial will guide you through connecting a BlinkyTile sculpture (I made the standard dodecahedron) to a microcontroller.  The same basic instructions will apply to just about any microcontroller, but we'll be using an Arduino Uno.  I've also tested with a [Teensy 3.1](http://www.pjrc.com/store/teensy31.html).
 
-**Note: **
+**Note**:
 You should already have your BlinkyTile sculpture assembled and tested with the light buddy board.  See the [BlinkyTile](http://blinkytile.com) page for more information and assembly instructions.
 
 Hardware
 --------
 * [BlinkyTile Kit](http://blinkytile.com)
 * [Arduino Uno](https://www.adafruit.com/product/50)
-* USB cable for the Arduino
-* Male to male jumper wires
+* [USB A-B cable for the Arduino](https://www.adafruit.com/products/62)
+* [Male to male jumper wires](https://www.adafruit.com/product/758)
 
 Circuit Wiring
 --------------

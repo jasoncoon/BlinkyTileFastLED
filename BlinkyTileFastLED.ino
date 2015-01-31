@@ -1,5 +1,7 @@
 #include <DmxSimple.h>
 #include <FastLED.h>
+#include <Wire.h>
+#include <Adafruit_LSM303.h>
 
 #define LED_PIN     0
 #define NUM_LEDS    12
@@ -8,10 +10,18 @@
 #define COLOR_ORDER BGR
 CRGB leds[NUM_LEDS];
 
+Adafruit_LSM303 lsm;
+
+boolean lsmAvailable = false;
+
 void setup() {
+  //  Serial.begin(9600);
+
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   FastLED.setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
+
+  lsmAvailable = lsm.begin();
 }
 
 byte hue = 0;
@@ -23,7 +33,8 @@ void loop() {
   // delay = solidHueShift();
   // delay = sequenceHueShift();
   // delay = antiAliasedLightBar();
-  delay = colorPaletteExample();
+  // delay = colorPaletteExample();
+  delay = tilt();
 
   FastLED.show();
   FastLED.delay(delay);
@@ -44,6 +55,69 @@ uint16_t sequenceHueShift() {
     currentLed = 0;
   }
   return 120;
+}
+
+// half segment size
+float s = 2048.0 / 5.0;
+// segment size
+float s2 = s * 2.0;
+
+uint16_t tilt() {
+  fill_solid(leds, NUM_LEDS, CRGB::Black);
+
+  if(!lsmAvailable){
+    return solidHueShift();
+  }
+
+  lsm.read();
+
+  float x = lsm.accelData.x;
+  float y = lsm.accelData.y;
+  float z = lsm.accelData.z;
+
+  if(z >= 512) {
+    // top
+    leds[0] += CRGB::Blue;
+  }
+  else if (z >= 0) {
+    // upper middle
+
+    if(between(x,-s2, 0) && between(y, s, 1024))
+      leds[5] += CRGB::Blue;
+    if(between(x,-1024, -s) && between(y, -s2, s))
+      leds[4] += CRGB::Blue;
+    if(between(x,-s, s) && between(y, -1024, -s2))
+      leds[3] += CRGB::Blue;
+    if(between(x,s, 1024) && between(y, -s2, s))
+      leds[2] += CRGB::Blue;
+    if(between(x, 0, s2) && between(y, s, 1024))
+      leds[1] += CRGB::Blue;
+  }
+  else if (z >= -512) {
+    // lower middle
+
+    if(between(x,-s2, 0) && between(y, s, 1024))
+      leds[10] += CRGB::Blue;
+    if(between(x,-1024, -s) && between(y, -s2, s))
+      leds[9] += CRGB::Blue;
+    if(between(x,-s, s) && between(y, -1024, -s2))
+      leds[8] += CRGB::Blue;
+    if(between(x,s, 1024) && between(y, -s2, s))
+      leds[7] += CRGB::Blue;
+    if(between(x, 0, s2) && between(y, s, 1024))
+      leds[6] += CRGB::Blue;
+  }
+  else // z < -512
+  {
+    // bottom
+    leds[11] += CRGB::Blue;
+  }
+
+  return 30;
+}
+
+boolean between(float value, float minV, float maxV) {
+  return value >= minV && value <= maxV;
 }
 
 int     F16pos = 0; // position of the "fraction-based bar"
@@ -192,18 +266,54 @@ void ChangePalettePeriodically()
 
   if (lastSecond != secondHand) {
     lastSecond = secondHand;
-    if (secondHand == 0)  { currentPalette = HeatColors_p;            currentBlending = BLEND; }
-    if (secondHand == 5)  { currentPalette = RainbowColors_p;         currentBlending = BLEND; }
-    if (secondHand == 10) { currentPalette = RainbowStripeColors_p;   currentBlending = NOBLEND; }
-    if (secondHand == 15) { currentPalette = RainbowStripeColors_p;   currentBlending = BLEND; }
-    if (secondHand == 20) { SetupPurpleAndGreenPalette();             currentBlending = BLEND; }
-    if (secondHand == 25) { SetupTotallyRandomPalette();              currentBlending = BLEND; }
-    if (secondHand == 30) { SetupBlackAndWhiteStripedPalette();       currentBlending = NOBLEND; }
-    if (secondHand == 35) { SetupBlackAndWhiteStripedPalette();       currentBlending = BLEND; }
-    if (secondHand == 40) { currentPalette = CloudColors_p;           currentBlending = BLEND; }
-    if (secondHand == 45) { currentPalette = PartyColors_p;           currentBlending = BLEND; }
-    if (secondHand == 50) { currentPalette = myRedWhiteBluePalette_p; currentBlending = NOBLEND; }
-    if (secondHand == 55) { currentPalette = myRedWhiteBluePalette_p; currentBlending = BLEND; }
+    if (secondHand == 0)  { 
+      currentPalette = HeatColors_p;            
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 5)  { 
+      currentPalette = RainbowColors_p;         
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 10) { 
+      currentPalette = RainbowStripeColors_p;   
+      currentBlending = NOBLEND; 
+    }
+    if (secondHand == 15) { 
+      currentPalette = RainbowStripeColors_p;   
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 20) { 
+      SetupPurpleAndGreenPalette();             
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 25) { 
+      SetupTotallyRandomPalette();              
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 30) { 
+      SetupBlackAndWhiteStripedPalette();       
+      currentBlending = NOBLEND; 
+    }
+    if (secondHand == 35) { 
+      SetupBlackAndWhiteStripedPalette();       
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 40) { 
+      currentPalette = CloudColors_p;           
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 45) { 
+      currentPalette = PartyColors_p;           
+      currentBlending = BLEND; 
+    }
+    if (secondHand == 50) { 
+      currentPalette = myRedWhiteBluePalette_p; 
+      currentBlending = NOBLEND; 
+    }
+    if (secondHand == 55) { 
+      currentPalette = myRedWhiteBluePalette_p; 
+      currentBlending = BLEND; 
+    }
   }
 }
 
@@ -295,6 +405,18 @@ const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
 // palette to Green (0,255,0) and Blue (0,0,255), and then retrieved 
 // the first sixteen entries from the virtual palette (of 256), you'd get
 // Green, followed by a smooth gradient from green-to-blue, and then Blue.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

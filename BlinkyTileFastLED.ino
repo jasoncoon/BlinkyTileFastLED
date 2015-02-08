@@ -5,10 +5,27 @@
 
 #define LED_PIN     0
 #define NUM_LEDS    12
-#define BRIGHTNESS  32
 #define LED_TYPE    DMXSIMPLE
 #define COLOR_ORDER BGR
+
+#define PATTERN_SWITCH_PIN 3
+#define BRIGHTNESS_SWITCH_PIN    4
+
 CRGB leds[NUM_LEDS];
+
+unsigned int patternCount = 5;
+unsigned int currentPatternIndex = 0;
+
+boolean ignorePatternSwitch = false;
+boolean ignoreBrightnessSwitch = false;
+
+// The brightness of our pixels (0 to 255).
+// 0 is off.
+// 16 is dim.
+// 64 is medium.
+// 128 is bright.
+// 255 is blindingly bright!
+byte brightness = 32;
 
 Adafruit_LSM303 lsm;
 
@@ -17,9 +34,12 @@ boolean lsmAvailable = false;
 void setup() {
   //  Serial.begin(9600);
 
+  pinMode(PATTERN_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(BRIGHTNESS_SWITCH_PIN, INPUT_PULLUP);
+
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   FastLED.setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(BRIGHTNESS);
+  FastLED.setBrightness(brightness);
 
   lsmAvailable = lsm.begin();
 }
@@ -30,14 +50,62 @@ byte currentLed = 0;
 void loop() {
   uint16_t delay = 0;
 
-  // delay = solidHueShift();
-  // delay = sequenceHueShift();
-  // delay = antiAliasedLightBar();
-  // delay = colorPaletteExample();
-  delay = tilt();
+  switch (currentPatternIndex) {
+  case 0:
+    delay = tilt();
+    break;
+
+  case 1:
+    delay = colorPaletteExample();
+    break;
+
+  case 2:
+    delay = solidHueShift();
+    break;
+
+  case 3:
+    delay = sequenceHueShift();
+    break;
+
+  case 4:
+    delay = antiAliasedLightBar();
+    break;
+  }
 
   FastLED.show();
   FastLED.delay(delay);
+
+  handleInput();
+}
+
+void handleInput() {
+  if (digitalRead(PATTERN_SWITCH_PIN) == LOW) {
+    if (!ignorePatternSwitch) {
+      ignorePatternSwitch = true;
+
+      currentPatternIndex++;
+      if (currentPatternIndex >= patternCount)
+        currentPatternIndex = 0;
+    }
+  }
+  else {
+    ignorePatternSwitch = false;
+  }
+
+  if (digitalRead(BRIGHTNESS_SWITCH_PIN) == LOW) {
+    if (!ignoreBrightnessSwitch) {
+      ignoreBrightnessSwitch = true;
+
+      brightness += 32;
+      if (brightness < 32)
+        brightness = 32;
+
+      FastLED.setBrightness(brightness);
+    }
+  }
+  else {
+    ignoreBrightnessSwitch = false;
+  }
 }
 
 uint16_t solidHueShift() {
@@ -405,6 +473,8 @@ const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
 // palette to Green (0,255,0) and Blue (0,0,255), and then retrieved 
 // the first sixteen entries from the virtual palette (of 256), you'd get
 // Green, followed by a smooth gradient from green-to-blue, and then Blue.
+
+
 
 
 

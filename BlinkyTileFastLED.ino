@@ -5,7 +5,7 @@
 
 #define LED_PIN     0
 #define NUM_LEDS    12
-#define BRIGHTNESS  255
+#define BRIGHTNESS  32
 #define LED_TYPE    DMXSIMPLE
 #define COLOR_ORDER BGR
 CRGB leds[NUM_LEDS];
@@ -58,9 +58,9 @@ uint16_t sequenceHueShift() {
 }
 
 // half segment size
-float s = 2048.0 / 5.0;
+float s = 2048.0 / 5.0;  // 409.6F
 // segment size
-float s2 = s * 2.0;
+float s2 = s * 2.0; // 819.2F
 
 uint16_t tilt() {
   fill_solid(leds, NUM_LEDS, CRGB::Black);
@@ -75,36 +75,36 @@ uint16_t tilt() {
   float y = lsm.accelData.y;
   float z = lsm.accelData.z;
 
-  if(z >= 512) {
+  if(z >= 768) {
     // top
     leds[0] += CRGB::Blue;
   }
   else if (z >= 0) {
     // upper middle
 
-    if(between(x,-s2, 0) && between(y, s, 1024))
+    if(between(x,-1024.0F, -409.6F) && between(y, -614.4F, 204.8F))
       leds[5] += CRGB::Blue;
-    if(between(x,-1024, -s) && between(y, -s2, s))
+    else if(between(x,-409.6F, 409.6F) && between(y, -1024.2F, -614.4F))
       leds[4] += CRGB::Blue;
-    if(between(x,-s, s) && between(y, -1024, -s2))
+    else if(between(x,409.6F, 1024.0F) && between(y, -614.4F, 204.8F))
       leds[3] += CRGB::Blue;
-    if(between(x,s, 1024) && between(y, -s2, s))
+    else if(between(x, 0, 819.2F) && between(y, 204.8, 1024))
       leds[2] += CRGB::Blue;
-    if(between(x, 0, s2) && between(y, s, 1024))
+    else if(between(x,-819.2F, 0) && between(y, 204.8F, 1024.0F))
       leds[1] += CRGB::Blue;
   }
-  else if (z >= -512) {
+  else if (z >= -768) {
     // lower middle
 
-    if(between(x,-s2, 0) && between(y, s, 1024))
+    if(between(x,-819.2F, 0) && between(y, 819.2F, 1024))
       leds[10] += CRGB::Blue;
-    if(between(x,-1024, -s) && between(y, -s2, s))
+    if(between(x,-1024, -819.2F) && between(y, -819.2F, 819.2F))
       leds[9] += CRGB::Blue;
-    if(between(x,-s, s) && between(y, -1024, -s2))
+    if(between(x,-819.2F, 819.2F) && between(y, -1024, -819.2F))
       leds[8] += CRGB::Blue;
-    if(between(x,s, 1024) && between(y, -s2, s))
+    if(between(x,819.2F, 1024) && between(y, -819.2F, 819.2F))
       leds[7] += CRGB::Blue;
-    if(between(x, 0, s2) && between(y, s, 1024))
+    if(between(x, 0, 819.2F) && between(y, 819.2F, 1024))
       leds[6] += CRGB::Blue;
   }
   else // z < -512
@@ -405,6 +405,7 @@ const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
 // palette to Green (0,255,0) and Blue (0,0,255), and then retrieved 
 // the first sixteen entries from the virtual palette (of 256), you'd get
 // Green, followed by a smooth gradient from green-to-blue, and then Blue.
+
 
 
 

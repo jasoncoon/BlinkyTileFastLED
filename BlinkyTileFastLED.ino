@@ -130,12 +130,39 @@ float s = 2048.0 / 5.0;  // 409.6F
 // segment size
 float s2 = s * 2.0; // 819.2F
 
+byte topLed = 0;
+byte spinIndex = 0;
+
+byte tiltSpin[12][5] = 
+{
+  { 1, 2, 3, 4, 5 }, // 0
+  { 2, 0, 5, 6, 7 }, // 1
+  { 3, 0, 1, 7, 8 }, // 2
+  { 4, 0, 2, 8, 9 }, // 3
+  { 5, 0, 3, 9, 10 }, // 4
+  { 6, 1, 0, 4, 10 }, // 5
+  { 7, 1, 5, 10, 11 }, // 6
+  { 8, 2, 1, 6, 11 }, // 7
+  { 9, 3, 2, 7, 11 }, // 8
+  { 10, 4, 3, 8, 11 }, // 9
+  { 11, 6, 5, 4, 9 }, // 10
+  { 10, 9, 8, 7, 6 } // 11
+};
+
 uint16_t tilt() {
   fill_solid(leds, NUM_LEDS, CRGB::Black);
 
-  if(!lsmAvailable){
+  if(lsmAvailable){
+    leds[topLed] += CRGB::Blue;
+    leds[tiltSpin[topLed][spinIndex]] += CRGB::Blue;
+  }
+  else {
     return solidHueShift();
   }
+
+  spinIndex++;
+  if(spinIndex >=5)
+    spinIndex = 0;
 
   lsm.read();
 
@@ -145,43 +172,43 @@ uint16_t tilt() {
 
   if(z >= 768) {
     // top
-    leds[0] += CRGB::Blue;
+    topLed = 0;
   }
   else if (z >= 0) {
     // upper middle
 
-    if(between(x,-1024.0F, -409.6F) && between(y, -614.4F, 204.8F))
-      leds[5] += CRGB::Blue;
-    else if(between(x,-409.6F, 409.6F) && between(y, -1024.2F, -614.4F))
-      leds[4] += CRGB::Blue;
-    else if(between(x,409.6F, 1024.0F) && between(y, -614.4F, 204.8F))
-      leds[3] += CRGB::Blue;
-    else if(between(x, 0, 819.2F) && between(y, 204.8, 1024))
-      leds[2] += CRGB::Blue;
-    else if(between(x,-819.2F, 0) && between(y, 204.8F, 1024.0F))
-      leds[1] += CRGB::Blue;
+    if(between(x, -1024.0F, -409.6) && between(y, -204.8F, 614.4F))
+      topLed = 1;
+    else if(between(x, -409.6F, 409.6F) && between(y, 614.4F, 1024.0F))
+      topLed = 2;
+    else if(between(x, 409.6F, 1024.0F) && between(y, -204.8F, 614.4F))
+      topLed = 3;
+    else if(between(x, 0.0F, 819.2F) && between(y, -1024.0F, -204.8F))
+      topLed = 4;
+    else if(between(x, -819.2F, 0.0F) && between(y, -1024.0, -204.8))
+      topLed = 5;
   }
   else if (z >= -768) {
     // lower middle
 
-    if(between(x,-819.2F, 0) && between(y, 819.2F, 1024))
-      leds[10] += CRGB::Blue;
-    if(between(x,-1024, -819.2F) && between(y, -819.2F, 819.2F))
-      leds[9] += CRGB::Blue;
-    if(between(x,-819.2F, 819.2F) && between(y, -1024, -819.2F))
-      leds[8] += CRGB::Blue;
-    if(between(x,819.2F, 1024) && between(y, -819.2F, 819.2F))
-      leds[7] += CRGB::Blue;
-    if(between(x, 0, 819.2F) && between(y, 819.2F, 1024))
-      leds[6] += CRGB::Blue;
+    if(between(x,-1024.0F, -409.6F) && between(y, -614.4F, 204.8F))
+      topLed = 6;
+    else if(between(x,-819.2F, 0) && between(y, 204.8F, 1024.0F))
+      topLed = 7;
+    else if(between(x, 0, 819.2F) && between(y, 204.8, 1024))
+      topLed = 8;
+    else if(between(x,409.6F, 1024.0F) && between(y, -614.4F, 204.8F))
+      topLed = 9;
+    else if(between(x,-409.6F, 409.6F) && between(y, -1024.2F, -614.4F))
+      topLed = 10;
   }
   else // z < -512
   {
     // bottom
-    leds[11] += CRGB::Blue;
+    topLed = 11;
   }
 
-  return 30;
+  return 60;
 }
 
 boolean between(float value, float minV, float maxV) {
@@ -473,23 +500,5 @@ const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
 // palette to Green (0,255,0) and Blue (0,0,255), and then retrieved 
 // the first sixteen entries from the virtual palette (of 256), you'd get
 // Green, followed by a smooth gradient from green-to-blue, and then Blue.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

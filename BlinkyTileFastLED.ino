@@ -135,29 +135,52 @@ byte spinIndex = 0;
 
 byte tiltSpin[12][5] = 
 {
-  { 1, 2, 3, 4, 5 }, // 0
-  { 2, 0, 5, 6, 7 }, // 1
-  { 3, 0, 1, 7, 8 }, // 2
-  { 4, 0, 2, 8, 9 }, // 3
-  { 5, 0, 3, 9, 10 }, // 4
-  { 6, 1, 0, 4, 10 }, // 5
-  { 7, 1, 5, 10, 11 }, // 6
-  { 8, 2, 1, 6, 11 }, // 7
-  { 9, 3, 2, 7, 11 }, // 8
-  { 10, 4, 3, 8, 11 }, // 9
-  { 11, 6, 5, 4, 9 }, // 10
-  { 10, 9, 8, 7, 6 } // 11
+  { 
+    1, 2, 3, 4, 5   }
+  , // 0
+  { 
+    2, 0, 5, 6, 7   }
+  , // 1
+  { 
+    3, 0, 1, 7, 8   }
+  , // 2
+  { 
+    4, 0, 2, 8, 9   }
+  , // 3
+  { 
+    5, 0, 3, 9, 10   }
+  , // 4
+  { 
+    6, 1, 0, 4, 10   }
+  , // 5
+  { 
+    7, 1, 5, 10, 11   }
+  , // 6
+  { 
+    8, 2, 1, 6, 11   }
+  , // 7
+  { 
+    9, 3, 2, 7, 11   }
+  , // 8
+  { 
+    10, 4, 3, 8, 11   }
+  , // 9
+  { 
+    11, 6, 5, 4, 9   }
+  , // 10
+  { 
+    10, 9, 8, 7, 6   } // 11
 };
 
 uint16_t tilt() {
-  fill_solid(leds, NUM_LEDS, CRGB::Black);
-
   if(lsmAvailable){
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+
     leds[topLed] += CRGB::Blue;
     leds[tiltSpin[topLed][spinIndex]] += CRGB::Blue;
   }
   else {
-    return solidHueShift();
+    return colorPaletteExample();
   }
 
   spinIndex++;
@@ -500,5 +523,6 @@ const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
 // palette to Green (0,255,0) and Blue (0,0,255), and then retrieved 
 // the first sixteen entries from the virtual palette (of 256), you'd get
 // Green, followed by a smooth gradient from green-to-blue, and then Blue.
+
 
 

@@ -13,7 +13,7 @@
 
 CRGB leds[NUM_LEDS];
 
-unsigned int patternCount = 5;
+unsigned int patternCount = 7;
 unsigned int currentPatternIndex = 0;
 
 boolean ignorePatternSwitch = false;
@@ -51,25 +51,34 @@ void loop() {
   uint16_t delay = 0;
 
   switch (currentPatternIndex) {
-  case 0:
-    delay = tilt();
-    break;
+    case 0:
+    default:
+      delay = compass();
+      break;
 
-  case 1:
-    delay = colorPaletteExample();
-    break;
+    case 1:
+      delay = tilt();
+      break;
 
-  case 2:
-    delay = solidHueShift();
-    break;
+    case 2:
+      delay = force();
+      break;
 
-  case 3:
-    delay = sequenceHueShift();
-    break;
+    case 3:
+      delay = colorPaletteExample();
+      break;
 
-  case 4:
-    delay = antiAliasedLightBar();
-    break;
+    case 4:
+      delay = solidHueShift();
+      break;
+
+    case 5:
+      delay = sequenceHueShift();
+      break;
+
+    case 6:
+      delay = antiAliasedLightBar();
+      break;
   }
 
   FastLED.show();
@@ -125,6 +134,56 @@ uint16_t sequenceHueShift() {
   return 120;
 }
 
+uint16_t force() {
+  if (!lsmAvailable) {
+    return colorPaletteExample();
+  }
+
+  lsm.read();
+
+  float Pi = 3.14159;
+
+  // Calculate the angle of the vector y,x
+  float heading = (atan2(lsm.accelData.y, lsm.accelData.x) * 180) / Pi;
+
+  // Normalize to 0-360
+  if (heading < 0)
+  {
+    heading = 360 + heading;
+  }
+
+  uint8_t hue = map(heading, 0, 360, 0, 255);
+  
+  fill_solid(leds, NUM_LEDS, CHSV(hue, 255, 255));
+
+  return 60;
+}
+
+uint16_t compass() {
+  if (!lsmAvailable) {
+    return colorPaletteExample();
+  }
+
+  lsm.read();
+
+  float Pi = 3.14159;
+
+  // Calculate the angle of the vector y,x
+  float heading = (atan2(lsm.magData.y, lsm.magData.x) * 180) / Pi;
+
+  // Normalize to 0-360
+  if (heading < 0)
+  {
+    heading = 360 + heading;
+  }
+
+  uint8_t hue = map(heading, 0, 360, 0, 255);
+  
+  fill_solid(leds, NUM_LEDS, CHSV(hue, 255, 255));
+
+  return 60;
+}
+
 // half segment size
 float s = 2048.0 / 5.0;  // 409.6F
 // segment size
@@ -133,50 +192,62 @@ float s2 = s * 2.0; // 819.2F
 byte topLed = 0;
 byte spinIndex = 0;
 
-byte tiltSpin[12][5] = 
+byte tiltSpin[12][5] =
 {
-  { 
-    1, 2, 3, 4, 5   }
+  {
+    1, 2, 3, 4, 5
+  }
   , // 0
-  { 
-    2, 0, 5, 6, 7   }
+  {
+    2, 0, 5, 6, 7
+  }
   , // 1
-  { 
-    3, 0, 1, 7, 8   }
+  {
+    3, 0, 1, 7, 8
+  }
   , // 2
-  { 
-    4, 0, 2, 8, 9   }
+  {
+    4, 0, 2, 8, 9
+  }
   , // 3
-  { 
-    5, 0, 3, 9, 10   }
+  {
+    5, 0, 3, 9, 10
+  }
   , // 4
-  { 
-    6, 1, 0, 4, 10   }
+  {
+    6, 1, 0, 4, 10
+  }
   , // 5
-  { 
-    7, 1, 5, 10, 11   }
+  {
+    7, 1, 5, 10, 11
+  }
   , // 6
-  { 
-    8, 2, 1, 6, 11   }
+  {
+    8, 2, 1, 6, 11
+  }
   , // 7
-  { 
-    9, 3, 2, 7, 11   }
+  {
+    9, 3, 2, 7, 11
+  }
   , // 8
-  { 
-    10, 4, 3, 8, 11   }
+  {
+    10, 4, 3, 8, 11
+  }
   , // 9
-  { 
-    11, 6, 5, 4, 9   }
+  {
+    11, 6, 5, 4, 9
+  }
   , // 10
-  { 
-    10, 9, 8, 7, 6   } // 11
+  {
+    10, 9, 8, 7, 6
+  } // 11
 };
 
 uint16_t tilt() {
-  if(lsmAvailable){
+  if (lsmAvailable) {
     fill_solid(leds, NUM_LEDS, CRGB::Black);
 
-    leds[topLed] += CRGB::Blue;
+    leds[topLed] += CRGB::Red;
     leds[tiltSpin[topLed][spinIndex]] += CRGB::Blue;
   }
   else {
@@ -184,7 +255,7 @@ uint16_t tilt() {
   }
 
   spinIndex++;
-  if(spinIndex >=5)
+  if (spinIndex >= 5)
     spinIndex = 0;
 
   lsm.read();
@@ -193,36 +264,36 @@ uint16_t tilt() {
   float y = lsm.accelData.y;
   float z = lsm.accelData.z;
 
-  if(z >= 768) {
+  if (z >= 768) {
     // top
     topLed = 0;
   }
   else if (z >= 0) {
     // upper middle
 
-    if(between(x, -1024.0F, -409.6) && between(y, -204.8F, 614.4F))
+    if (between(x, -1024.0F, -409.6) && between(y, -204.8F, 614.4F))
       topLed = 1;
-    else if(between(x, -409.6F, 409.6F) && between(y, 614.4F, 1024.0F))
+    else if (between(x, -409.6F, 409.6F) && between(y, 614.4F, 1024.0F))
       topLed = 2;
-    else if(between(x, 409.6F, 1024.0F) && between(y, -204.8F, 614.4F))
+    else if (between(x, 409.6F, 1024.0F) && between(y, -204.8F, 614.4F))
       topLed = 3;
-    else if(between(x, 0.0F, 819.2F) && between(y, -1024.0F, -204.8F))
+    else if (between(x, 0.0F, 819.2F) && between(y, -1024.0F, -204.8F))
       topLed = 4;
-    else if(between(x, -819.2F, 0.0F) && between(y, -1024.0, -204.8))
+    else if (between(x, -819.2F, 0.0F) && between(y, -1024.0, -204.8))
       topLed = 5;
   }
   else if (z >= -768) {
     // lower middle
 
-    if(between(x,-1024.0F, -409.6F) && between(y, -614.4F, 204.8F))
+    if (between(x, -1024.0F, -409.6F) && between(y, -614.4F, 204.8F))
       topLed = 6;
-    else if(between(x,-819.2F, 0) && between(y, 204.8F, 1024.0F))
+    else if (between(x, -819.2F, 0) && between(y, 204.8F, 1024.0F))
       topLed = 7;
-    else if(between(x, 0, 819.2F) && between(y, 204.8, 1024))
+    else if (between(x, 0, 819.2F) && between(y, 204.8, 1024))
       topLed = 8;
-    else if(between(x,409.6F, 1024.0F) && between(y, -614.4F, 204.8F))
+    else if (between(x, 409.6F, 1024.0F) && between(y, -614.4F, 204.8F))
       topLed = 9;
-    else if(between(x,-409.6F, 409.6F) && between(y, -1024.2F, -614.4F))
+    else if (between(x, -409.6F, 409.6F) && between(y, -1024.2F, -614.4F))
       topLed = 10;
   }
   else // z < -512
@@ -251,7 +322,7 @@ uint16_t antiAliasedLightBar() {
   // wrap around at end
   // remember that F16pos contains position in "16ths of a pixel"
   // so the 'end of the strip' is (NUM_LEDS * 16)
-  if( F16pos >= (NUM_LEDS * 16)) {
+  if ( F16pos >= (NUM_LEDS * 16)) {
     F16pos -= (NUM_LEDS * 16);
   }
 
@@ -286,9 +357,9 @@ void drawFractionalBar( int pos16, int width, uint8_t hue)
   //                       57.9 . . . . . . . . . . . . . . . . . 61.9
   //                        v                                      v
   //  ---+---56----+---57----+---58----+---59----+---60----+---61----+---62---->
-  //     |         |        X|XXXXXXXXX|XXXXXXXXX|XXXXXXXXX|XXXXXXXX |  
+  //     |         |        X|XXXXXXXXX|XXXXXXXXX|XXXXXXXXX|XXXXXXXX |
   //  ---+---------+---------+---------+---------+---------+---------+--------->
-  //                   10%       100%      100%      100%      90%        
+  //                   10%       100%      100%      100%      90%
   //
   // the fraction we get is in 16ths and needs to be converted to 256ths,
   // so we multiply by 16.  We subtract from 255 because we want a high
@@ -303,15 +374,15 @@ void drawFractionalBar( int pos16, int width, uint8_t hue)
   // which is why the "<= width" below instead of "< width".
 
   uint8_t bright;
-  for( int n = 0; n <= width; n++) {
-    if( n == 0) {
+  for ( int n = 0; n <= width; n++) {
+    if ( n == 0) {
       // first pixel in the bar
       bright = firstpixelbrightness;
-    } 
-    else if( n == width ) {
+    }
+    else if ( n == width ) {
       // last pixel in the bar
       bright = lastpixelbrightness;
-    } 
+    }
     else {
       // middle pixels
       bright = 255;
@@ -319,7 +390,7 @@ void drawFractionalBar( int pos16, int width, uint8_t hue)
 
     leds[i] += CHSV( hue, 255, bright);
     i++;
-    if( i == NUM_LEDS) i = 0; // wrap around
+    if ( i == NUM_LEDS) i = 0; // wrap around
   }
 }
 
@@ -338,18 +409,18 @@ uint16_t colorPaletteExample() {
 // This example shows several ways to set up and use 'palettes' of colors
 // with FastLED.
 //
-// These compact palettes provide an easy way to re-colorize your 
+// These compact palettes provide an easy way to re-colorize your
 // animation on the fly, quickly, easily, and with low overhead.
 //
 // USING palettes is MUCH simpler in practice than in theory, so first just
-// run this sketch, and watch the pretty lights as you then read through 
+// run this sketch, and watch the pretty lights as you then read through
 // the code.  Although this sketch has eight (or more) different color schemes,
 // the entire sketch compiles down to about 6.5K on AVR.
 //
 // FastLED provides a few pre-configured color palettes, and makes it
 // extremely easy to make up your own color schemes with palettes.
 //
-// Some notes on the more abstract 'theory and practice' of 
+// Some notes on the more abstract 'theory and practice' of
 // FastLED compact palettes are at the bottom of this file.
 
 CRGBPalette16 currentPalette = RainbowColors_p;
@@ -384,53 +455,53 @@ void ChangePalettePeriodically()
 
   if (lastSecond != secondHand) {
     lastSecond = secondHand;
-    if (secondHand == 0)  { 
-      currentPalette = HeatColors_p;            
-      currentBlending = BLEND; 
+    if (secondHand == 0)  {
+      currentPalette = HeatColors_p;
+      currentBlending = BLEND;
     }
-    if (secondHand == 5)  { 
-      currentPalette = RainbowColors_p;         
-      currentBlending = BLEND; 
+    if (secondHand == 5)  {
+      currentPalette = RainbowColors_p;
+      currentBlending = BLEND;
     }
-    if (secondHand == 10) { 
-      currentPalette = RainbowStripeColors_p;   
-      currentBlending = NOBLEND; 
+    if (secondHand == 10) {
+      currentPalette = RainbowStripeColors_p;
+      currentBlending = NOBLEND;
     }
-    if (secondHand == 15) { 
-      currentPalette = RainbowStripeColors_p;   
-      currentBlending = BLEND; 
+    if (secondHand == 15) {
+      currentPalette = RainbowStripeColors_p;
+      currentBlending = BLEND;
     }
-    if (secondHand == 20) { 
-      SetupPurpleAndGreenPalette();             
-      currentBlending = BLEND; 
+    if (secondHand == 20) {
+      SetupPurpleAndGreenPalette();
+      currentBlending = BLEND;
     }
-    if (secondHand == 25) { 
-      SetupTotallyRandomPalette();              
-      currentBlending = BLEND; 
+    if (secondHand == 25) {
+      SetupTotallyRandomPalette();
+      currentBlending = BLEND;
     }
-    if (secondHand == 30) { 
-      SetupBlackAndWhiteStripedPalette();       
-      currentBlending = NOBLEND; 
+    if (secondHand == 30) {
+      SetupBlackAndWhiteStripedPalette();
+      currentBlending = NOBLEND;
     }
-    if (secondHand == 35) { 
-      SetupBlackAndWhiteStripedPalette();       
-      currentBlending = BLEND; 
+    if (secondHand == 35) {
+      SetupBlackAndWhiteStripedPalette();
+      currentBlending = BLEND;
     }
-    if (secondHand == 40) { 
-      currentPalette = CloudColors_p;           
-      currentBlending = BLEND; 
+    if (secondHand == 40) {
+      currentPalette = CloudColors_p;
+      currentBlending = BLEND;
     }
-    if (secondHand == 45) { 
-      currentPalette = PartyColors_p;           
-      currentBlending = BLEND; 
+    if (secondHand == 45) {
+      currentPalette = PartyColors_p;
+      currentBlending = BLEND;
     }
-    if (secondHand == 50) { 
-      currentPalette = myRedWhiteBluePalette_p; 
-      currentBlending = NOBLEND; 
+    if (secondHand == 50) {
+      currentPalette = myRedWhiteBluePalette_p;
+      currentBlending = NOBLEND;
     }
-    if (secondHand == 55) { 
-      currentPalette = myRedWhiteBluePalette_p; 
-      currentBlending = BLEND; 
+    if (secondHand == 55) {
+      currentPalette = myRedWhiteBluePalette_p;
+      currentBlending = BLEND;
     }
   }
 }
@@ -467,15 +538,15 @@ void SetupPurpleAndGreenPalette()
   CRGB black = CRGB::Black;
 
   currentPalette = CRGBPalette16(
-  green, green, black, black,
-  purple, purple, black, black,
-  green, green, black, black,
-  purple, purple, black, black);
+                     green, green, black, black,
+                     purple, purple, black, black,
+                     green, green, black, black,
+                     purple, purple, black, black);
 }
 
 
 // This example shows how to set up a static color palette
-// which is stored in PROGMEM (flash), which is almost always more 
+// which is stored in PROGMEM (flash), which is almost always more
 // plentiful than RAM.  A static PROGMEM palette like this
 // takes up 64 bytes of flash.
 const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
@@ -508,7 +579,7 @@ const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
 // has 256 entries, each containing a specific 24-bit RGB color.  You can then
 // index into the color palette using a simple 8-bit (one byte) value.
 // A 256-entry color palette takes up 768 bytes of RAM, which on Arduino
-// is quite possibly "too many" bytes. 
+// is quite possibly "too many" bytes.
 //
 // FastLED does offer traditional 256-element palettes, for setups that
 // can afford the 768-byte cost in RAM.
@@ -516,11 +587,11 @@ const TProgmemPalette16 myRedWhiteBluePalette_p PROGMEM =
 // However, FastLED also offers a compact alternative.  FastLED offers
 // palettes that store 16 distinct entries, but can be accessed AS IF
 // they actually have 256 entries; this is accomplished by interpolating
-// between the 16 explicit entries to create fifteen intermediate palette 
+// between the 16 explicit entries to create fifteen intermediate palette
 // entries between each pair.
 //
-// So for example, if you set the first two explicit entries of a compact 
-// palette to Green (0,255,0) and Blue (0,0,255), and then retrieved 
+// So for example, if you set the first two explicit entries of a compact
+// palette to Green (0,255,0) and Blue (0,0,255), and then retrieved
 // the first sixteen entries from the virtual palette (of 256), you'd get
 // Green, followed by a smooth gradient from green-to-blue, and then Blue.
 

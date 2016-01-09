@@ -30,7 +30,7 @@ Software
 --------
 1. We'll be using the Arduino software to program the microcontroller.  Download and install 1.0.6 (**not 1.5.x**): http://arduino.cc/en/Main/Software
 2. The FastLED library will be used to control the BlinkyTile LEDs.  Download the latest version (3.0 or newer) from the releases page: https://github.com/FastLED/FastLED/releases 
-3. The DmxSimple library will be used by FastLED internally.  Download it here: https://code.google.com/p/tinkerit/wiki/DmxSimple
+3. The DmxSimple library will be used by FastLED internally.  Download it here: https://github.com/PaulStoffregen/DmxSimple
 4. Follow these instructions to install the FastLED and DmxSimple libraries: http://arduino.cc/en/Guide/Libraries
 
 Code
